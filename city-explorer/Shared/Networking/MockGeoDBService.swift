@@ -8,6 +8,8 @@
 import Foundation
 import Combine
 
+// Used for SwiftUI previews
+
 final class MockGeoDBService: GeoDBService {
 
     func fetchCountryCities(

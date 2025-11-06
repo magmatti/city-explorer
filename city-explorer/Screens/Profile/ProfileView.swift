@@ -12,7 +12,10 @@ struct ProfileView: View {
         ScrollView {
             VStack(spacing: 16) {
                 
-                GradientHeader(title: "Profile", subtitle: "Your profile information") {
+                GradientHeader(
+                    title: LocalizedStringKey("Profile"),
+                    subtitle: LocalizedStringKey("Your profile information")
+                ) {
                     ZStack {
                         Circle()
                             .fill(.ultraThickMaterial)
