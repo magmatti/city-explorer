@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+@MainActor
 final class CitiesViewModel: ObservableObject {
     
     @Published var items: [City] = []
@@ -16,14 +17,26 @@ final class CitiesViewModel: ObservableObject {
     @Published var total = 0
     @Published var limit = 10
     @Published var offset = 0
+    @Published private(set) var favoriteIds: Set<String> = []
 
     let country: Country
     private let api: GeoDBService
     private var bag = Set<AnyCancellable>()
+    
+    private let repo: FavoritesRepository
 
-    init(country: Country, api: GeoDBService) {
+    init(country: Country, api: GeoDBService, repo: FavoritesRepository) {
         self.country = country
         self.api = api
+        self.repo = repo
+        
+        repo.itemsPublisher
+            .map { Set($0.map(\.id)) }
+            .sink { [weak self] ids in
+                self?.favoriteIds = ids
+            }
+            .store(in: &bag)
+        
         reload()
     }
 
@@ -45,11 +58,22 @@ final class CitiesViewModel: ObservableObject {
 
     func nextPage() {
         guard offset + limit < total else { return }
-        offset += limit; reload()
+        offset += limit;
+        reload()
     }
     
     func prevPage() {
         offset = max(0, offset - limit)
         reload()
     }
+    
+    func isFavorite(id: String) -> Bool {
+        favoriteIds.contains(id)
+    }
+    
+    func toggle(_ f: FavoriteCity) {
+        repo.toggle(f)
+    }
+    
+    var favoritesRepo: FavoritesRepository { repo }
 }

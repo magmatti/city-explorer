@@ -9,11 +9,10 @@ import SwiftUI
 
 struct CountryCitiesView: View {
     
-    @EnvironmentObject private var favorites: FavoritesManager
     @StateObject var vm: CitiesViewModel
 
-    init(country: Country, api: GeoDBService) {
-        _vm = StateObject(wrappedValue: CitiesViewModel(country: country, api: api))
+    init(country: Country, api: GeoDBService, repo: FavoritesRepository) {
+        _vm = StateObject(wrappedValue: CitiesViewModel(country: country, api: api, repo: repo))
     }
 
     var body: some View {
@@ -45,7 +44,8 @@ struct CountryCitiesView: View {
                                 cityId: city.id,
                                 displayName: city.name,
                                 countryCode: vm.country.countryCode,
-                                api: LiveGeoDBService()
+                                api: LiveGeoDBService(),
+                                repo: vm.favoritesRepo
                             )
                         } label: {
                             VStack(alignment: .leading, spacing: 4) {
@@ -59,27 +59,18 @@ struct CountryCitiesView: View {
 
                         Spacer(minLength: 12)
 
-                        Button {
-                            favorites.toggle(fav)
-                        } label: {
-                            Image(systemName: favorites.isFavorite(id: fav.id) ? "heart.fill" : "heart")
+                        Button { vm.toggle(fav) } label: {
+                            Image(systemName: vm.isFavorite(id: fav.id) ? "heart.fill" : "heart")
                                 .foregroundStyle(.pink.opacity(0.95))
                                 .font(.title3)
-                                .accessibilityLabel(
-                                    favorites.isFavorite(id: fav.id) ? "Remove from favorites" : "Add to favorites"
-                                )
                         }
                         .buttonStyle(.plain)
                     }
                     .padding(.vertical, 6)
                     .swipeActions {
-                        Button {
-                            favorites.toggle(fav)
-                        } label: {
-                            Label(
-                                favorites.isFavorite(id: fav.id) ? "Unfavorite" : "Favorite",
-                                systemImage: favorites.isFavorite(id: fav.id) ? "heart.slash" : "heart.fill"
-                            )
+                        Button { vm.toggle(fav) } label: {
+                            Label(vm.isFavorite(id: fav.id) ? "Unfavorite" : "Favorite",
+                                  systemImage: vm.isFavorite(id: fav.id) ? "heart.slash" : "heart.fill")
                         }
                         .tint(.pink)
                     }
@@ -105,6 +96,7 @@ struct CountryCitiesView: View {
 #Preview {
     CountryCitiesView(
         country: PreviewData.country,
-        api: MockGeoDBService()
-    ).environmentObject(FavoritesManager())
+        api: MockGeoDBService(),
+        repo: FavoritesRepoPreviewMock()
+    )
 }

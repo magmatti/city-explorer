@@ -9,16 +9,21 @@ import SwiftUI
 import MapKit
 
 struct CityDetailView: View {
-    
-    @EnvironmentObject private var favorites: FavoritesManager
+
     @StateObject private var vm: CityDetailsViewModel
 
     private let fallbackName: String
     private let countryCode: String
     private let cityId: String
 
-    init(cityId: String, displayName: String, countryCode: String, api: GeoDBService) {
-        _vm = StateObject(wrappedValue: CityDetailsViewModel(cityId: cityId, api: api))
+    init(
+        cityId: String,
+        displayName: String,
+        countryCode: String,
+        api: GeoDBService,
+        repo: FavoritesRepository
+    ) {
+        _vm = StateObject(wrappedValue: CityDetailsViewModel(cityId: cityId, api: api, repo: repo))
         self.fallbackName = displayName
         self.countryCode = countryCode
         self.cityId = cityId
@@ -100,9 +105,9 @@ struct CityDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    favorites.toggle(baseFavorite)
+                    vm.toggleFavorite(baseFavorite)
                     if let c = vm.city {
-                        favorites.mergeDetails(
+                        vm.mergeFavoriteDetails(
                             id: baseFavorite.id,
                             latitude: c.latitude,
                             longitude: c.longitude,
@@ -111,21 +116,19 @@ struct CityDetailView: View {
                         )
                     }
                 } label: {
-                    Image(systemName: favorites.isFavorite(id: baseFavorite.id) ? "heart.fill" : "heart")
-                        .accessibilityLabel(favorites.isFavorite(id: baseFavorite.id)
-                                            ? "Remove from favorites"
-                                            : "Add to favorites")
+                    Image(systemName: vm.isFavorite(baseFavorite.id) ? "heart.fill" : "heart")
+                           .accessibilityLabel(vm.isFavorite(baseFavorite.id)
+                                               ? "Remove from favorites"
+                                               : "Add to favorites")
                 }
             }
         }
         .onChange(of: vm.city) { _, newValue in
             guard let c = newValue else { return }
-            favorites.mergeDetails(
+            vm.mergeFavoriteDetails(
                 id: baseFavorite.id,
-                latitude: c.latitude,
-                longitude: c.longitude,
-                population: c.population,
-                timezone: c.timezone
+                latitude: c.latitude, longitude: c.longitude,
+                population: c.population, timezone: c.timezone
             )
         }
     }
@@ -136,6 +139,7 @@ struct CityDetailView: View {
         cityId: "mock:PL:Warsaw",
         displayName: "Warsaw",
         countryCode: "PL",
-        api: MockGeoDBService()
-    ).environmentObject(FavoritesManager())
+        api: MockGeoDBService(),
+        repo: FavoritesRepoPreviewMock()
+    )
 }

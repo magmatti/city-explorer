@@ -16,12 +16,14 @@ struct RootView: View {
     @State private var favoritesPath = NavigationPath()
     @State private var profilePath = NavigationPath()
     
+    let repo: FavoritesRepository
+    
     var body: some View {
         TabView(selection: $selection) {
             
             // HOME
             NavigationStack(path: $homePath) {
-                CountriesView()
+                CountriesView(repo: repo)
                     .navigationTitle("Home")
                     .toolbarTitleDisplayMode(.inline)
             }
@@ -30,7 +32,7 @@ struct RootView: View {
             
             // FAVORITES
             NavigationStack(path: $favoritesPath) {
-                FavoritesView()
+                FavoritesView(repo: repo)
                     .navigationTitle("Favorites")
                     .toolbarTitleDisplayMode(.inline)
             }
@@ -51,5 +53,5 @@ struct RootView: View {
 }
 
 #Preview {
-    RootView()
+    RootView(repo: FavoritesRepoPreviewMock())
 }

@@ -9,7 +9,13 @@ import SwiftUI
 
 struct FavoritesView: View {
 
-    @EnvironmentObject private var favorites: FavoritesManager
+    @StateObject private var vm: FavoritesViewModel
+    private let repo: FavoritesRepository
+    
+    init(repo: FavoritesRepository) {
+        self.repo = repo
+        _vm = StateObject(wrappedValue: FavoritesViewModel(repo: repo))
+    }
 
     var body: some View {
         VStack(spacing: 12) {
@@ -20,7 +26,7 @@ struct FavoritesView: View {
             .padding()
 
             List {
-                if favorites.items.isEmpty {
+                if vm.items.isEmpty {
                     Section {
                         VStack(spacing: 8) {
                             Text("No favorites yet").font(.headline)
@@ -32,14 +38,15 @@ struct FavoritesView: View {
                         .padding(.vertical, 12)
                     }
                 } else {
-                    ForEach(favorites.items.sorted(by: { $0.addedAt > $1.addedAt })) { f in
+                    ForEach(vm.items.sorted(by: { $0.addedAt > $1.addedAt })) { f in
 
                         NavigationLink {
                             CityDetailView(
                                 cityId: f.id,
                                 displayName: f.name,
                                 countryCode: f.countryCode,
-                                api: LiveGeoDBService()
+                                api: LiveGeoDBService(),
+                                repo: repo
                             )
                         } label: {
                             VStack(alignment: .leading, spacing: 4) {
@@ -59,13 +66,13 @@ struct FavoritesView: View {
                         .listRowInsets(.init(top: 6, leading: 16, bottom: 6, trailing: 16))
                         .swipeActions {
                             Button(role: .destructive) {
-                                if let idx = favorites.items.firstIndex(of: f) {
-                                    favorites.remove(at: IndexSet(integer: idx))
+                                if let idx = vm.items.firstIndex(of: f) {
+                                    vm.remove(at: IndexSet(integer: idx))
                                 }
                             } label: { Label("Remove", systemImage: "trash") }
                         }
                     }
-                    .onDelete(perform: favorites.remove)
+                    .onDelete(perform: vm.remove)
                 }
             }
             .listStyle(.plain)
@@ -78,6 +85,7 @@ struct FavoritesView: View {
 }
 
 #Preview {
-    FavoritesView()
-        .environmentObject(FavoritesManager())
+    FavoritesView(
+        repo: FavoritesRepoPreviewMock()
+    )
 }

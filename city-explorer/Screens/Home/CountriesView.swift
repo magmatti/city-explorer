@@ -9,7 +9,10 @@ import SwiftUI
 import MapKit
 
 struct CountriesView: View {
+    
     @StateObject private var vm = CountriesViewModel(api: LiveGeoDBService())
+    
+    let repo: FavoritesRepository
     
     var body: some View {
         NavigationStack {
@@ -38,7 +41,7 @@ struct CountriesView: View {
                 HStack {
                     Spacer()
                     NavigationLink {
-                        FavoritesView()
+                        FavoritesView(repo: repo)
                     } label: {
                         Label("Favorites", systemImage: "heart.fill")
                             .font(.subheadline.weight(.semibold))
@@ -53,7 +56,11 @@ struct CountriesView: View {
                 List {
                     ForEach(vm.items) { country in
                         NavigationLink {
-                            CountryCitiesView(country: country, api: LiveGeoDBService())
+                            CountryCitiesView(
+                                country: country,
+                                api: LiveGeoDBService(),
+                                repo: repo
+                            )
                         } label: {
                             HStack(spacing: 12) {
                                 Text(country.flagEmoji ?? "🌍").font(.largeTitle)
@@ -88,5 +95,7 @@ struct CountriesView: View {
 }
 
 #Preview {
-    CountriesView()
+    CountriesView(
+        repo: FavoritesRepoPreviewMock()
+    )
 }
