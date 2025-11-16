@@ -8,6 +8,6 @@
 import Foundation
 
 enum GeoDBKeys {
-    static let apiKey = " "
-    static let host = " "
+    static let apiKey = ""
+    static let host = ""
 }
