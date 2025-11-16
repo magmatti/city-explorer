@@ -3,6 +3,8 @@
 The application allows users to browse countries and cities, view detailed city information, and manage a list of favorite cities.  
 The project is built using SwiftUI with a clean MVVM + Repository architecture.
 
+Check app demo [here](https://www.youtube.com/watch?v=20wgGMPswiY)
+
 ---
 
 ## Features
